@@ -1,40 +1,49 @@
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
 import connectDB from '../../connections/mongodb';
+import { commandHandler } from './handlers/commandHandler';
+import interactionCreate from './events/interaction/interactionCreate';
 
-dotenv.config();
+// Extend Client type to include commands collection
+declare module 'discord.js' {
+    interface Client {
+            commands: Collection<string, any>;
+                }
+                }
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates,
-    ],
-    partials: [Partials.Channel, Partials.Message, Partials.Reaction]
-});
+                dotenv.config();
 
-// Bot Ready Event
-client.once('ready', () => {
-    console.log(` Mature Bot is Online as ${client.user?.tag}`);
-});
+                const client = new Client({
+                    intents: [
+                            GatewayIntentBits.Guilds,
+                                    GatewayIntentBits.GuildMembers,
+                                            GatewayIntentBits.GuildMessages,
+                                                    GatewayIntentBits.MessageContent,
+                                                            GatewayIntentBits.GuildVoiceStates,
+                                                                ],
+                                                                    partials: [Partials.Channel, Partials.Message, Partials.Reaction]
+                                                                    });
 
-// Start Bot Function
-async function startBot() {
-    try {
-        // 1. Connect Database
-        await connectDB();
-        
-        // 2. Load Handlers (Hum Phase 2 mein uncomment karenge)
-        // await commandHandler(client);
-        // await eventHandler(client);
+                                                                    // Bot Ready Event
+                                                                    client.once('ready', () => {
+                                                                        console.log(`🧠 Mature Bot is Online as ${client.user?.tag}`);
+                                                                        });
 
-        // 3. Login to Discord
-        await client.login(process.env.DISCORD_TOKEN);
-    } catch (error) {
-        console.error('Failed to start bot:', error);
-    }
-}
+                                                                        // Start Bot Function
+                                                                        async function startBot() {
+                                                                            try {
+                                                                                    // 1. Connect Database
+                                                                                            await connectDB();
 
-startBot();
+                                                                                                            // 2. Load Handlers
+                                                                                                                    await commandHandler(client);
+                                                                                                                            interactionCreate(client);
+
+                                                                                                                                    // 3. Login to Discord
+                                                                                                                                            await client.login(process.env.DISCORD_TOKEN);
+                                                                                                                                                } catch (error) {
+                                                                                                                                                        console.error('❌ Failed to start bot:', error);
+                                                                                                                                                            }
+                                                                                                                                                            }
+
+                                                                                                                                                            startBot();
